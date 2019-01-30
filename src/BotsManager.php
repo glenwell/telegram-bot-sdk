@@ -99,6 +99,38 @@ class BotsManager
     }
 
     /**
+     * Make the dynamic bot instance.
+     *
+     * @param string $name
+     *
+     * @return Api
+     */
+    public function dynamicBot($params)
+    {
+
+        $token = array_get($params, 'token');
+        $commands = array_get($params, 'commands', []);
+
+        $telegram = new Api(
+            $token,
+            $this->getConfig('async_requests', false),
+            $this->getConfig('http_client_handler', null)
+        );
+
+        // Check if DI needs to be enabled for Commands
+        if ($this->getConfig('resolve_command_dependencies', false) && isset($this->container)) {
+            $telegram->setContainer($this->container);
+        }
+
+        $commands = $this->parseBotCommands($commands);
+
+        // Register Commands
+        $telegram->addCommands($commands);
+
+        return $telegram;
+    }
+
+    /**
      * Reconnect to the given bot.
      *
      * @param string $name
